@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     },
 }, {timestamps: true})
 
-
+// mongoDB automatically adds "s" to the models.
 const User = mongoose.model('User', userSchema);
 
 export default User;
