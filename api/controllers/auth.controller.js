@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 // use bcryptjs full name because bcrypt is going to give error during the deployment.
 import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utlis/error.js";
+import jwt from "jsonwebtoken";
 
 // we are making this async because singup a user takes time in creating the user in our database. and then we send the response to the user.
 // we added next to use the middleware.
@@ -13,7 +14,7 @@ export const signup = async (req, res, next) => {
     if (!username || !email || !password || username === '' || email === '' || password === '') {
         // tested with postman ✔️
         // return res.status(400).json({ message: "All fields are required." });
-        next(errorHandler(400, "All fields are required."));
+        return next(errorHandler(400, "All fields are required."));
     }
 
     // we don't have to use await here because hashSync already have the await by itself. tested ✔️
@@ -39,3 +40,32 @@ export const signup = async (req, res, next) => {
 
 }
 
+
+
+
+export const signin = async (req, res, next)=>{
+    const { email, password} = req.body;
+
+    if(!email || ! password || email === '' || password === ''){
+        return next(errorHandler(400, "All fields are required"));
+    }
+
+    try {
+        const validUser = await User.findOne({email});
+        if(!validUser){
+            return next(errorHandler(404, "User not found"));
+        }
+        const validPassword = bcryptjs.compareSync(password, validUser.password);
+        if(!validPassword){
+            return next(errorHandler(400, "Wrong credentials"));
+        }
+
+        const token = jwt.sign({id: validUser._id}, process.env.JWT_SECRET);
+
+        const { password: pass, ...rest} = validUser._doc;
+
+        res.status(200).cookie('access_token', token, { httpOnly: true, }).json(rest)
+    } catch (error) {
+        next(error);
+    }
+}
