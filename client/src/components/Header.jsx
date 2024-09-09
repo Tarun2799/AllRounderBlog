@@ -41,7 +41,7 @@ export default function Header() {
               label={
                 <Avatar
                   // alt='user'
-                  img={currentUser.profilePicture}
+                  img={currentUser.profilePicture || 'https://flowbite.com/docs/images/people/profile-picture-5.jpg'}
                   rounded
                 />
               }
